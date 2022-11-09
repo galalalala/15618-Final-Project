@@ -1,1 +1,1 @@
-# 15618-FInial-Project
+# Data Parallel in MPI
