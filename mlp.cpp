@@ -6,6 +6,10 @@
 #include <cassert>
 #include <iostream>
 #include <algorithm>
+#include <memory>
+#include <variant>
+#include <fstream>
+#include <sstream>
 
 std::vector <std::vector<float>> random_init(std::pair<int, int> shape) {
     int IN = shape.first;
@@ -118,7 +122,7 @@ public:
         cachez_ = std::vector<std::vector<float>>();
     }
 
-    std::vector<std::vector<float>> Forward(const std::vector<std::vector<float>>& x) {
+    std::vector<std::vector<float>> forward(const std::vector<std::vector<float>>& x) {
         int bs = x.size();
         int output_size = x[0].size();
 
@@ -133,10 +137,10 @@ public:
     }
 
     std::vector<std::vector<float>> operator()(const std::vector<std::vector<float>>& x) {
-        return Forward(x);
+        return forward(x);
     }
 
-    std::vector<std::vector<float>> Backward(const std::vector<std::vector<float>>& dz) {
+    std::vector<std::vector<float>> backward(const std::vector<std::vector<float>>& dz) {
         int bs = dz.size();
         int output_size = dz[0].size();
 
@@ -167,7 +171,7 @@ void test_d_sigmoid() {
         std::cout << std::endl;
     }
     std::vector<std::vector<float>> one(bs, std::vector<float>(dim, 1.0f));
-    std::vector<std::vector<float>> dx = sig.Backward(one);
+    std::vector<std::vector<float>> dx = sig.backward(one);
     std::cout << "dx =" << std::endl;
     for (std::size_t i = 0; i < dx.size(); ++i) {
         for (std::size_t j = 0; j < dx[i].size(); ++j) {
@@ -301,6 +305,119 @@ void test_d_linear() {
         }
         std::cout << std::endl;
     }
+    linear.step();
+}
+
+
+class MLP {
+public:
+    int input_size;
+    std::vector<int> hidden_sizes;
+    int output_size;
+    int num_layers;
+    float learning_rate;
+    std::vector<Linear> linears;
+    std::vector<Sigmoid> sigmoids;
+    MLP(int input_size, std::vector<int> hidden_sizes, int output_size, float learning_rate)
+            : input_size(input_size),
+              hidden_sizes(hidden_sizes),
+              output_size(output_size),
+              learning_rate(learning_rate) {
+        num_layers = hidden_sizes.size();
+        linears.emplace_back(Linear(input_size, hidden_sizes[0], learning_rate));
+        sigmoids.emplace_back(Sigmoid());
+        for (int i = 1; i < num_layers; i++) {
+            int hs = hidden_sizes[i];
+            int hs_last = hidden_sizes[i - 1];
+            linears.emplace_back(Linear(hs_last, hs, learning_rate));
+            sigmoids.emplace_back(Sigmoid());
+        }
+        linears.emplace_back(Linear(hidden_sizes[num_layers - 1], output_size, learning_rate));
+    }
+
+    std::vector<std::vector<float>> forward(std::vector<std::vector<float>> x) {
+        for (std::size_t i = 0; i < hidden_sizes.size(); ++i) {
+            x = linears[i](x);
+            x = sigmoids[i](x);
+        }
+        x = linears[hidden_sizes.size()](x);
+        return softmax(x);
+    }
+
+    std::vector <std::vector<float>> operator()(std::vector <std::vector<float>> x) {
+        return forward(x);
+    }
+
+    void backward(const std::vector<int>& y, const std::vector<std::vector<float>>& y_hat) {
+        std::vector<std::vector<float>> g = d_softmax_cross_entropy(y, y_hat);
+        for (int i = static_cast<int>(hidden_sizes.size()); i >= 0; --i) {
+            g = linears[i].backward(g);
+        }
+    }
+
+    void step() {
+        for (auto& l : linears) {
+            l.step();
+        }
+    }
+};
+
+void test_mlp() {
+    MLP model {1024, {64}, 10, 0.1};
+    std::vector <std::vector<float>> x(4, std::vector<float>(1024, 0.0f));
+    std::vector<std::vector<float>> y_hat = model(x);
+    for (auto row : y_hat) {
+        for (auto p : row) {
+            std::cout << p << " ";
+        }
+        std::cout << std::endl;
+    }
+    for (auto l : model.linears) {
+        std::cout << l.cachex_.size() << " ";
+        std::cout << l.cachex_[0].size() << " ";
+    }
+    std::cout << std::endl;
+    std::vector<int> y{1,2,3,4};
+    model.backward(y, y_hat);
+    model.step();
+}
+
+void read_mnist(std::vector<std::vector<float>>& X, std::vector<int>& y) {
+    // Open the CSV file
+    std::ifstream file("mnist/mnist_train.csv");
+
+    // Read the first line and store it in a string
+    std::string line;
+    std::getline(file, line);
+
+    while (std::getline(file, line))
+    {
+        // Parse the line and store the values in a vector
+        std::vector<float> row;
+        std::stringstream ss(line);
+        std::string cell;
+        std::getline(ss, cell, ',');
+        y.push_back(std::stoi(cell));
+        while (std::getline(ss, cell, ',')) {
+            // Convert the cell string to a float and store it in the vector
+            row.push_back(std::stof(cell) / 255.f);
+        }
+
+        // Add the row vector to the data matrix
+        X.push_back(row);
+    }
+    // Close the file
+    file.close();
+
+//    for (int i = 0; i < 10; ++i) {
+//        std::cout << y[i] << " ";
+//    }
+//    std::cout << std::endl;
+//    float sum = 0;
+//    for (std::size_t i = 0; i < X[0].size(); ++i) {
+//        sum += X[1][i];
+//    }
+//    std::cout << sum;
 }
 
 int main() {
@@ -309,5 +426,27 @@ int main() {
 //    test_d_softmax_cross_entropy();
 //    test_d_sigmoid();
 //    test_d_linear();
+//    test_mlp();
+    std::vector<std::vector<float>> X;
+    std::vector<int> y;
+    read_mnist(X, y);
+    int n = X.size();
+    int d = X[0].size();
+    MLP model {d, {128, 128}, 10, 0.1};
+    int bs = 256;
+    for (int i = 0; i < n-bs; i += bs) {
+        std::vector<std::vector<float>> X_batch;
+        for (int j = 0; j < bs; ++j) {
+            X_batch.push_back(X[i+j]);
+        }
+        std::vector<int> y_batch;
+        for (int j = 0; j < bs; ++j) {
+            y_batch.push_back(y[i+j]);
+        }
+        std::vector<std::vector<float>> y_hat = model(X_batch);
+        model.backward(y_batch, y_hat);
+        model.step();
+        std::cout << "i=" << i << ",loss=" << cross_entropy(y_batch, y_hat) << std::endl;
+    }
     return 0;
 }
