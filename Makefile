@@ -25,4 +25,178 @@ run_allreduce: allreduce
 run_mpara: mpara
 	mpirun -n $(n) ./mpara 128 0.1 256
 
-.PHONY: run_serial run_psrv run_allreduce run_mpara
+exp_serial: serial
+# change number of layers
+	./serial 1 32 0.1 32
+	./serial 2 32 0.1 32
+	./serial 3 32 0.1 32
+
+# change hidden dim
+	./serial 1 16 0.1 32
+	./serial 2 32 0.1 32
+	./serial 3 64 0.1 32
+	./serial 3 128 0.1 32
+
+exp_psrv: psrv
+# change number of layers
+	mpirun -n 1 ./psrv 1 32 0.1 32
+	mpirun -n 2 ./psrv 1 32 0.1 32
+	mpirun -n 4 ./psrv 1 32 0.1 32
+	mpirun -n 8 ./psrv 1 32 0.1 32
+	mpirun -n 16 ./psrv 1 32 0.1 32
+	mpirun -n 32 ./psrv 1 32 0.1 32
+	mpirun -n 64 ./psrv 1 32 0.1 32
+	mpirun -n 128 ./psrv 1 32 0.1 32
+
+	mpirun -n 1 ./psrv 2 32 0.1 32
+	mpirun -n 2 ./psrv 2 32 0.1 32
+	mpirun -n 4 ./psrv 2 32 0.1 32
+	mpirun -n 8 ./psrv 2 32 0.1 32
+	mpirun -n 16 ./psrv 2 32 0.1 32
+	mpirun -n 32 ./psrv 2 32 0.1 32
+	mpirun -n 64 ./psrv 2 32 0.1 32
+	mpirun -n 128 ./psrv 2 32 0.1 32
+
+	mpirun -n 1 ./psrv 3 32 0.1 32
+	mpirun -n 2 ./psrv 3 32 0.1 32
+	mpirun -n 4 ./psrv 3 32 0.1 32
+	mpirun -n 8 ./psrv 3 32 0.1 32
+	mpirun -n 16 ./psrv 3 32 0.1 32
+	mpirun -n 32 ./psrv 3 32 0.1 32
+	mpirun -n 64 ./psrv 3 32 0.1 32
+	mpirun -n 128 ./psrv 3 32 0.1 32
+
+# change hidden dim
+	mpirun -n 1 ./psrv 1 16 0.1 32
+	mpirun -n 2 ./psrv 1 16 0.1 32
+	mpirun -n 4 ./psrv 1 16 0.1 32
+	mpirun -n 8 ./psrv 1 16 0.1 32
+	mpirun -n 16 ./psrv 1 16 0.1 32
+	mpirun -n 32 ./psrv 1 16 0.1 32
+	mpirun -n 64 ./psrv 1 16 0.1 32
+	mpirun -n 128 ./psrv 1 16 0.1 32
+
+	mpirun -n 1 ./psrv 1 32 0.1 32
+	mpirun -n 2 ./psrv 1 32 0.1 32
+	mpirun -n 4 ./psrv 1 32 0.1 32
+	mpirun -n 8 ./psrv 1 32 0.1 32
+	mpirun -n 16 ./psrv 1 32 0.1 32
+	mpirun -n 32 ./psrv 1 32 0.1 32
+	mpirun -n 64 ./psrv 1 32 0.1 32
+	mpirun -n 128 ./psrv 1 32 0.1 32
+
+	mpirun -n 1 ./psrv 1 64 0.1 32
+	mpirun -n 2 ./psrv 1 64 0.1 32
+	mpirun -n 4 ./psrv 1 64 0.1 32
+	mpirun -n 8 ./psrv 1 64 0.1 32
+	mpirun -n 16 ./psrv 1 64 0.1 32
+	mpirun -n 32 ./psrv 1 64 0.1 32
+	mpirun -n 64 ./psrv 1 64 0.1 32
+	mpirun -n 128 ./psrv 1 64 0.1 32
+
+	mpirun -n 1 ./psrv 1 128 0.1 32
+	mpirun -n 2 ./psrv 1 128 0.1 32
+	mpirun -n 4 ./psrv 1 128 0.1 32
+	mpirun -n 8 ./psrv 1 128 0.1 32
+	mpirun -n 16 ./psrv 1 128 0.1 32
+	mpirun -n 32 ./psrv 1 128 0.1 32
+	mpirun -n 64 ./psrv 1 128 0.1 32
+	mpirun -n 128 ./psrv 1 128 0.1 32
+
+exp_allreduce: allreduce
+# change number all layers
+	mpirun -n 1 ./allreduce 1 32 0.1 32
+	mpirun -n 2 ./allreduce 1 32 0.1 32
+	mpirun -n 4 ./allreduce 1 32 0.1 32
+	mpirun -n 8 ./allreduce 1 32 0.1 32
+	mpirun -n 16 ./allreduce 1 32 0.1 32
+	mpirun -n 32 ./allreduce 1 32 0.1 32
+	mpirun -n 64 ./allreduce 1 32 0.1 32
+	mpirun -n 128 ./allreduce 1 32 0.1 32
+
+	mpirun -n 1 ./allreduce 2 32 0.1 32
+	mpirun -n 2 ./allreduce 2 32 0.1 32
+	mpirun -n 4 ./allreduce 2 32 0.1 32
+	mpirun -n 8 ./allreduce 2 32 0.1 32
+	mpirun -n 16 ./allreduce 2 32 0.1 32
+	mpirun -n 32 ./allreduce 2 32 0.1 32
+	mpirun -n 64 ./allreduce 2 32 0.1 32
+	mpirun -n 128 ./allreduce 2 32 0.1 32
+
+	mpirun -n 1 ./allreduce 3 32 0.1 32
+	mpirun -n 2 ./allreduce 3 32 0.1 32
+	mpirun -n 4 ./allreduce 3 32 0.1 32
+	mpirun -n 8 ./allreduce 3 32 0.1 32
+	mpirun -n 16 ./allreduce 3 32 0.1 32
+	mpirun -n 32 ./allreduce 3 32 0.1 32
+	mpirun -n 64 ./allreduce 3 32 0.1 32
+	mpirun -n 128 ./allreduce 3 32 0.1 32
+
+# change hidden dim
+	mpirun -n 1 ./allreduce 1 16 0.1 32
+	mpirun -n 2 ./allreduce 1 16 0.1 32
+	mpirun -n 4 ./allreduce 1 16 0.1 32
+	mpirun -n 8 ./allreduce 1 16 0.1 32
+	mpirun -n 16 ./allreduce 1 16 0.1 32
+	mpirun -n 32 ./allreduce 1 16 0.1 32
+	mpirun -n 64 ./allreduce 1 16 0.1 32
+	mpirun -n 128 ./allreduce 1 16 0.1 32
+
+	mpirun -n 1 ./allreduce 1 32 0.1 32
+	mpirun -n 2 ./allreduce 1 32 0.1 32
+	mpirun -n 4 ./allreduce 1 32 0.1 32
+	mpirun -n 8 ./allreduce 1 32 0.1 32
+	mpirun -n 16 ./allreduce 1 32 0.1 32
+	mpirun -n 32 ./allreduce 1 32 0.1 32
+	mpirun -n 64 ./allreduce 1 32 0.1 32
+	mpirun -n 128 ./allreduce 1 32 0.1 32
+
+	mpirun -n 1 ./allreduce 1 64 0.1 32
+	mpirun -n 2 ./allreduce 1 64 0.1 32
+	mpirun -n 4 ./allreduce 1 64 0.1 32
+	mpirun -n 8 ./allreduce 1 64 0.1 32
+	mpirun -n 16 ./allreduce 1 64 0.1 32
+	mpirun -n 32 ./allreduce 1 64 0.1 32
+	mpirun -n 64 ./allreduce 1 64 0.1 32
+	mpirun -n 128 ./allreduce 1 64 0.1 32
+
+	mpirun -n 1 ./allreduce 1 128 0.1 32
+	mpirun -n 2 ./allreduce 1 128 0.1 32
+	mpirun -n 4 ./allreduce 1 128 0.1 32
+	mpirun -n 8 ./allreduce 1 128 0.1 32
+	mpirun -n 16 ./allreduce 1 128 0.1 32
+	mpirun -n 32 ./allreduce 1 128 0.1 32
+	mpirun -n 64 ./allreduce 1 128 0.1 32
+	mpirun -n 128 ./allreduce 1 128 0.1 32
+
+exp_mpara: mpara
+# change hidden dim
+	mpirun -n 1 ./mpara 128 0.1 256
+	mpirun -n 2 ./mpara 128 0.1 256
+	mpirun -n 4 ./mpara 128 0.1 256
+	mpirun -n 8 ./mpara 128 0.1 256
+	mpirun -n 16 ./mpara 128 0.1 256
+	mpirun -n 32 ./mpara 128 0.1 256
+	mpirun -n 64 ./mpara 128 0.1 256
+	mpirun -n 128 ./mpara 128 0.1 256
+
+	mpirun -n 1 ./mpara 256 0.1 256
+	mpirun -n 2 ./mpara 256 0.1 256
+	mpirun -n 4 ./mpara 256 0.1 256
+	mpirun -n 8 ./mpara 256 0.1 256
+	mpirun -n 16 ./mpara 256 0.1 256
+	mpirun -n 32 ./mpara 256 0.1 256
+	mpirun -n 64 ./mpara 256 0.1 256
+	mpirun -n 128 ./mpara 256 0.1 256
+
+	mpirun -n 1 ./mpara 512 0.1 256
+	mpirun -n 2 ./mpara 512 0.1 256
+	mpirun -n 4 ./mpara 512 0.1 256
+	mpirun -n 8 ./mpara 512 0.1 256
+	mpirun -n 16 ./mpara 512 0.1 256
+	mpirun -n 32 ./mpara 512 0.1 256
+	mpirun -n 64 ./mpara 512 0.1 256
+	mpirun -n 128 ./mpara 512 0.1 256
+
+
+.PHONY: run_serial run_psrv run_allreduce run_mpara exp_psrv exp_allreduce exp_mpara
