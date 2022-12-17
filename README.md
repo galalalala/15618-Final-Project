@@ -1,1 +1,1 @@
-# Data Parallel in MPI
+# Data and Model Parallel in MPI
