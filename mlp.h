@@ -198,7 +198,7 @@ public:
             w_(input_size + 1, std::vector<float>(output_size)),
             dw_(input_size + 1, std::vector<float>(output_size)) {
         // Initialize weights with random values using the random_init function
-        w_ = random_init(std::pair(input_size + 1, output_size));
+        w_ = random_init(std::pair<int, int>(input_size + 1, output_size));
     }
 
     std::vector <std::vector<float>> forward(const std::vector <std::vector<float>> &x) {

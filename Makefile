@@ -1,5 +1,8 @@
 mlp:
-	g++-12 -std=c++20 -Wall -g  mlp.cpp -o ./mlp
+	g++ -std=c++20 -Wall -g  mlp.cpp -o ./mlp
 
-serial:
-	g++-12 -std=c++20 -Wall -g  train_mnist_serial.cpp -o ./serial
+serial: mlp.h train_mnist_serial.cpp
+	g++ -std=c++20 -Wall -g  train_mnist_serial.cpp -o ./serial
+
+psrv: mlp.h train_mnist_param_srv.cpp
+	mpic++ -std=c++14  -Wall -g  train_mnist_param_srv.cpp -o ./psrv

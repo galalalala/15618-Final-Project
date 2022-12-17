@@ -3,3 +3,5 @@ mlp
 .DS_Store
 mnist
 serial
+*.dSYM
+prsv
