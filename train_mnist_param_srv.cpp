@@ -25,8 +25,8 @@ void bcast_weights(MLP* model, int word_rank, int word_size) {
         } else {
             buf.reserve(N);
         }
-        int err = MPI_Bcast(buf.data(), N, MPI_FLOAT, word_size - 1, MPI_COMM_WORLD);
-        std::cout << "rank = " << word_rank << ", bcast err = " << err  << " (success = " << MPI_SUCCESS << ")" << std::endl;
+        MPI_Bcast(buf.data(), N, MPI_FLOAT, word_size - 1, MPI_COMM_WORLD);
+//        std::cout << "rank = " << word_rank << ", bcast err = " << err  << " (success = " << MPI_SUCCESS << ")" << std::endl;
         if (word_rank != word_size - 1) {
             for (auto i = 0; i < dim_in; ++i) {
                 for (auto j = 0; j < dim_out; ++j) {
@@ -46,8 +46,8 @@ void agg_grad(MLP* model, int word_rank, int word_size) {
 
         std::vector<float> sendbuf = flatten(l.dw_);
         std::vector<float> recvbuf(N);
-        int err = MPI_Reduce(sendbuf.data(), recvbuf.data(), N, MPI_FLOAT, MPI_SUM, word_size - 1, MPI_COMM_WORLD);
-        std::cout << "rank = " << word_rank << ", reduce err = " << err  << " (success = " << MPI_SUCCESS << ")" << std::endl;
+        MPI_Reduce(sendbuf.data(), recvbuf.data(), N, MPI_FLOAT, MPI_SUM, word_size - 1, MPI_COMM_WORLD);
+//        std::cout << "rank = " << word_rank << ", reduce err = " << err  << " (success = " << MPI_SUCCESS << ")" << std::endl;
         if (word_rank == word_size - 1) {
             for (auto i = 0; i < dim_in; ++i) {
                 for (auto j = 0; j < dim_out; ++j) {
@@ -76,22 +76,26 @@ int main(int argc, char *argv[]) {
 //    std::cout << "rank = " << world_rank << ", l[0][66][66] = " << model.linears[0].w_[66][66] << "\n";
 //    std::cout << "rank = " << world_rank << ", l[1][123][123] = " << model.linears[1].w_[123][123] << "\n";
 //    std::cout << "rank = " << world_rank << ", l[2][123][4] = " << model.linears[2].w_[123][4] << "\n";
-    agg_grad(&model, world_rank, world_size);
     int bs = 256;
-    for (int i = 0; i < n-bs; i += bs) {
+    int bs_total = bs * world_size;
+    for (int i = 0; i <= n-bs_total; i += bs_total) {
         std::vector<std::vector<float>> X_batch;
-        for (int j = 0; j < bs; ++j) {
+        for (int j = world_rank; j < bs_total; j += world_size) {
             X_batch.push_back(X[i+j]);
         }
         std::vector<int> y_batch;
-        for (int j = 0; j < bs; ++j) {
+        for (int j = world_rank; j < bs_total; j += world_size) {
             y_batch.push_back(y[i+j]);
         }
         std::vector<std::vector<float>> y_hat = model(X_batch);
         model.backward(y_batch, y_hat);
-        model.step();
-        std::cout << "i=" << i << ",loss=" << cross_entropy(y_batch, y_hat) << std::endl;
+        agg_grad(&model, world_rank, world_size);
+        if (world_rank == world_size - 1) {
+            model.step();
+            std::cout << "i=" << i << ",loss=" << cross_entropy(y_batch, y_hat) << std::endl;
+        }
+        bcast_weights(&model, world_rank, world_size);
+
     }
-    std::cout << "before finalize" << std::endl;
     MPI_Finalize();
 }

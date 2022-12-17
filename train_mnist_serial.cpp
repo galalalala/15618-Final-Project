@@ -11,7 +11,7 @@ int main() {
     int d = X[0].size();
     MLP model {d, {128, 128}, 10, 0.1};
     int bs = 256;
-    for (int i = 0; i < n-bs; i += bs) {
+    for (int i = 0; i <= n-bs; i += bs) {
         std::vector<std::vector<float>> X_batch;
         for (int j = 0; j < bs; ++j) {
             X_batch.push_back(X[i+j]);
