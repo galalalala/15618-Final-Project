@@ -199,4 +199,4 @@ exp_mpara: mpara
 	mpirun -n 128 ./mpara 512 0.1 256
 
 
-.PHONY: run_serial run_psrv run_allreduce run_mpara exp_psrv exp_allreduce exp_mpara
+.PHONY: run_serial run_psrv run_allreduce run_mpara exp_serial exp_psrv exp_allreduce exp_mpara
