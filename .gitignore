@@ -1,8 +1,4 @@
-mlp
 .idea
 .DS_Store
 mnist
-serial
 *.dSYM
-prsv
-allreduce
