@@ -58,7 +58,7 @@ int main(int argc, char *argv[]) {
     int d = X[0].size();
     int per_device_hidden_dim = program.get<int>("d") / world_size;
 
-    MLP model{d, {per_device_hidden_dim}, 10, program.get<float>("lr")};
+    MLP_Mpara model{d, {per_device_hidden_dim}, 10, program.get<float>("lr")};
 
     int bs = program.get<int>("bs");
     progressbar bar(static_cast<int>(n / bs));
@@ -74,25 +74,29 @@ int main(int argc, char *argv[]) {
         for (int j = 0; j < bs; ++j) {
             y_batch.push_back(y[i + j]);
         }
-        std::vector <std::vector<float>> y_hat = model(X_batch);
-        std::vector<float> sendbuf = flatten(y_hat);
+        std::vector <std::vector<float>> logits = model(X_batch);
+        std::vector<float> sendbuf = flatten(logits);
         int N = 10 * bs;
         std::vector<float> recvbuf(N);
         MPI_Allreduce(sendbuf.data(), recvbuf.data(), N, MPI_FLOAT, MPI_SUM, MPI_COMM_WORLD);
-        std::vector <std::vector<float>> y_hat_reduced;
-        for (int j = 0; i < bs; ++i) {
+//        for (int j = 0; j < N; ++j) {
+//            recvbuf[j] /= world_size;
+//        }
+        std::vector <std::vector<float>> logits_reduced;
+        for (int j = 0; j < bs; ++j) {
             std::vector<float> row;
             for (int k = 0; k < 10; ++k) {
                 row.push_back(recvbuf[10 * j + k]);
             }
-            y_hat_reduced.push_back(row);
+            logits_reduced.push_back(row);
         }
-        model.backward(y_batch, y_hat_reduced);
+        std::vector <std::vector<float>> y_hat = softmax(logits_reduced);
+        model.backward(y_batch, y_hat);
         model.step();
         if (world_rank == world_size - 1) {
             bar.update();
             indices.push_back(i);
-            losses.push_back(cross_entropy(y_batch, y_hat_reduced));
+            losses.push_back(cross_entropy(y_batch, y_hat));
         }
     }
     if (world_rank == world_size - 1) {

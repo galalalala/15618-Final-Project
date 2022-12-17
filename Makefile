@@ -11,7 +11,7 @@ allreduce: mlp.h train_mnist_allreduce.cpp
 	mpic++ -std=c++20  -Wall -g  train_mnist_allreduce.cpp -o ./allreduce
 
 mpara: mlp.h train_mnist_mpara.cpp
-	mpic++ -std=c++20  -Wall -g  train_mnist_mpara.cpp -o ./mpara
+	mpic++ -std=c++20  -Wall -g -O0 train_mnist_mpara.cpp -o ./mpara
 
 run_serial: serial
 	./serial 2 128 0.1 32

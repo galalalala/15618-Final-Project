@@ -382,3 +382,21 @@ void test_mlp() {
     model.step();
 }
 
+// MLP without softmax during forward pass, to make tensor model parallel possible
+class MLP_Mpara : public MLP {
+public:
+    MLP_Mpara(int input_size, std::vector<int> hidden_sizes, int output_size, float learning_rate) : MLP(input_size, hidden_sizes, output_size, learning_rate) {}
+
+    std::vector<std::vector<float>> forward(std::vector<std::vector<float>> x) {
+        for (std::size_t i = 0; i < hidden_sizes.size(); ++i) {
+            x = linears[i](x);
+            x = sigmoids[i](x);
+        }
+        x = linears[hidden_sizes.size()](x);
+        return x;
+    }
+
+    std::vector <std::vector<float>> operator()(std::vector <std::vector<float>> x) {
+        return forward(x);
+    }
+};
