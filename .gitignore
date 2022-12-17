@@ -1,5 +1,5 @@
 .idea
 .DS_Store
-mnist
+mnist/*.csv
 *.dSYM
 *.btr
