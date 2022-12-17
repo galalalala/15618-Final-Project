@@ -33,9 +33,9 @@ exp_serial: serial
 
 # change hidden dim
 	./serial 1 16 0.1 32
-	./serial 2 32 0.1 32
-	./serial 3 64 0.1 32
-	./serial 3 128 0.1 32
+	./serial 1 32 0.1 32
+	./serial 1 64 0.1 32
+	./serial 1 128 0.1 32
 
 exp_psrv: psrv
 # change number of layers
