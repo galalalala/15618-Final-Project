@@ -3,3 +3,4 @@
 mnist/*.csv
 *.dSYM
 *.btr
+.ipynb_checkpoints
